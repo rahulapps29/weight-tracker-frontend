@@ -11,55 +11,37 @@ const AuthContext = createContext({
   logout: () => {},
 });
 
-// AuthProvider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const extractUserData = (decodedToken) => {
-    console.log("Decoded Token Details:", {
-      fullToken: decodedToken,
-      standardClaims: {
-        iss: decodedToken.iss, // Issuer
-        sub: decodedToken.sub, // Subject (user ID)
-        aud: decodedToken.aud, // Audience
-        exp: decodedToken.exp, // Expiration time
-        iat: decodedToken.iat, // Issued at
-        nbf: decodedToken.nbf, // Not before
-        jti: decodedToken.jti, // JWT ID
-      },
-      customClaims: {
-        username: decodedToken.username,
-        preferred_username: decodedToken.preferred_username,
-        name: decodedToken.name,
-        email: decodedToken.email,
-        // Add any other custom claims your token might have
-      },
-    });
+    console.log("Decoded Token Details:", decodedToken);
+
+    const firstName = decodedToken.firstName || decodedToken.given_name || "";
+    const lastName = decodedToken.lastName || decodedToken.family_name || "";
 
     return {
-      id: decodedToken.sub || decodedToken.userId,
-      username:
-        decodedToken.username ||
-        decodedToken.preferred_username ||
-        decodedToken.name,
+      id: decodedToken.sub || decodedToken.userId || decodedToken.id,
       email: decodedToken.email,
+      firstName,
+      lastName,
+      fullName:
+        firstName && lastName
+          ? `${firstName} ${lastName}`
+          : firstName || decodedToken.name || "",
     };
   };
 
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem("token");
-      console.log("Initializing auth with stored token:", storedToken);
-
       if (storedToken) {
         try {
-          console.log("Raw token string:", storedToken);
           const decoded = jwtDecode(storedToken);
-          console.log("Token decoded successfully");
-
           const userData = extractUserData(decoded);
+
           setUser(userData);
           setToken(storedToken);
           setIsAuthenticated(true);
@@ -67,63 +49,44 @@ export const AuthProvider = ({ children }) => {
           api.defaults.headers.common[
             "Authorization"
           ] = `Bearer ${storedToken}`;
-          console.log("Authentication initialized successfully");
+          console.log("Auth initialized:", userData);
         } catch (error) {
-          console.error("Token decoding error:", error);
-          console.error("Invalid token - performing logout");
+          console.error("Token decoding failed:", error);
           logout();
         }
-      } else {
-        console.log("No stored token found");
       }
     };
     initializeAuth();
   }, []);
 
-  const login = async (token) => {
-    console.log("Login initiated with token:", token);
-    localStorage.setItem("token", token);
+  const login = async (newToken) => {
+    console.log("Login initiated with token:", newToken);
+    localStorage.setItem("token", newToken);
 
     try {
-      const decoded = jwtDecode(token);
-      console.log("Login token decoded successfully");
-
+      const decoded = jwtDecode(newToken);
       const userData = extractUserData(decoded);
-      localStorage.setItem("user", JSON.stringify(userData));
 
       setUser(userData);
-      setToken(token);
+      setToken(newToken);
       setIsAuthenticated(true);
 
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      console.log("Login completed successfully");
+      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+      console.log("Login successful:", userData);
     } catch (error) {
-      console.error("Login token decoding failed:", error);
+      console.error("Login failed. Invalid token.", error);
       logout();
     }
   };
 
   const logout = () => {
-    console.log("Logout initiated");
-    console.log("Current auth state before logout:", {
-      user,
-      token,
-      isAuthenticated,
-    });
-
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);
     delete api.defaults.headers.common["Authorization"];
 
-    console.log("Logout completed");
-    console.log("Auth state after logout:", {
-      user: null,
-      token: null,
-      isAuthenticated: false,
-    });
+    console.log("User logged out");
   };
 
   return (
@@ -141,5 +104,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Export the context as default
 export default AuthContext;

@@ -22,8 +22,15 @@ const Navbar = () => {
   const getDisplayName = () => {
     if (!user) return "User";
 
-    // Check various possible username fields
-    return user.username || user.name || user.email?.split("@")[0] || "User";
+    if (user.firstName || user.lastName) {
+      return `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+    }
+
+    if (user.fullName) return user.fullName;
+    if (user.username) return user.username;
+    if (user.email) return user.email.split("@")[0];
+
+    return "User";
   };
 
   return (

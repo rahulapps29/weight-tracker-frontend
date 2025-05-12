@@ -31,7 +31,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <h1>Welcome back, {user?.username}!</h1>
+      <h1>Welcome back, {user?.firstName}!</h1>
       <div className="dashboard-grid">
         <div className="card">
           <h3>
