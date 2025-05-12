@@ -6,7 +6,8 @@ import "./Register.css";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    username: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -27,7 +28,6 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
-    // Basic validation
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -37,7 +37,8 @@ const Register = () => {
 
     try {
       const data = await register({
-        username: formData.username,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
       });
@@ -57,14 +58,23 @@ const Register = () => {
       {error && <div className="error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>Username</label>
+          <label>First Name</label>
           <input
             type="text"
-            name="username"
-            value={formData.username}
+            name="firstName"
+            value={formData.firstName}
             onChange={handleChange}
             required
-            minLength="3"
+          />
+        </div>
+        <div className="form-group">
+          <label>Last Name</label>
+          <input
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
           />
         </div>
         <div className="form-group">

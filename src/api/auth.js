@@ -14,6 +14,13 @@ export const login = async (credentials) => {
   return response.data;
 };
 
+export const loginWithGoogle = async (googleCredential) => {
+  const response = await api.post("/google", {
+    token: googleCredential,
+  });
+  return response.data;
+};
+
 export const getCurrentUser = async (token) => {
   const response = await api.get("/me", {
     headers: {

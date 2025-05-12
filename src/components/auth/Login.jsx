@@ -1,11 +1,13 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import AuthContext from "../../context/AuthContext";
-import { login } from "../../api/auth";
+import { login, loginWithGoogle } from "../../api/auth";
+import "./Login.css";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const [error, setError] = useState("");
@@ -29,18 +31,33 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const token = credentialResponse.credential;
+      console.log("Google Credential Token:", token); // <-- log it
+
+      const data = await loginWithGoogle(token);
+      authLogin(data.token);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Google login failed", err);
+      setError("Google login failed");
+    }
+  };
+
   return (
     <div className="auth-form">
       <h2>Login</h2>
       {error && <div className="error">{error}</div>}
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>Username</label>
+          <label>Email</label>
           <input
-            type="text"
-            value={credentials.username}
+            type="email"
+            value={credentials.email}
             onChange={(e) =>
-              setCredentials({ ...credentials, username: e.target.value })
+              setCredentials({ ...credentials, email: e.target.value })
             }
             required
           />
@@ -60,6 +77,17 @@ const Login = () => {
           {isLoading ? "Logging in..." : "Login"}
         </button>
       </form>
+
+      <div className="divider">OR</div>
+
+      <GoogleLogin
+        onSuccess={handleGoogleLogin}
+        onError={() => setError("Google Login Failed")}
+      />
+
+      <div className="auth-footer">
+        Don’t have an account? <a href="/register">Sign up</a>
+      </div>
     </div>
   );
 };
