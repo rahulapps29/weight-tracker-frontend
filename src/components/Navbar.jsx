@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import { FaBars, FaTimes, FaPowerOff } from "react-icons/fa";
 
@@ -8,6 +8,7 @@ import "./Navbar.css";
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useContext(AuthContext);
+  const navigate = useNavigate(); // ✅ add this line
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -70,6 +71,7 @@ const Navbar = () => {
                   onClick={() => {
                     logout();
                     closeMobileMenu();
+                    navigate("/");
                   }}
                   title="Logout"
                   aria-label="Logout"
